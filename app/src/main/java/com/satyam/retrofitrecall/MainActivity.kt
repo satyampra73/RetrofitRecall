@@ -2,6 +2,7 @@ package com.satyam.retrofitrecall
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -25,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
         val retService : AlbumService = RetrofitInstance.getRetrofitInstance().create(AlbumService::class.java)
          val responseLiveData : LiveData<Response<AlbumsResponse>> = liveData {
-             val response = retService.getAlbums()
+             val response = retService.getSortedAlbums(3)
              emit(response)
          }
 
@@ -42,5 +43,14 @@ class MainActivity : AppCompatActivity() {
          }
         })
 
+        val pathResponse :LiveData<Response<AlbumsResponseItem>> = liveData {
+            val response = retService.getAlbum(3)
+            emit(response)
+        }
+
+        pathResponse.observe(this,Observer{
+            val title = it.body()?.title
+            Toast.makeText(applicationContext,title,Toast.LENGTH_LONG).show()
+        })
     }
 }
