@@ -20,37 +20,47 @@ import com.satyam.retrofitrecall.model.AlbumsResponseItem
 import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
+    lateinit var retService: AlbumService
     lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
-        val retService : AlbumService = RetrofitInstance.getRetrofitInstance().create(AlbumService::class.java)
-         val responseLiveData : LiveData<Response<AlbumsResponse>> = liveData {
-             val response = retService.getSortedAlbums(3)
-             emit(response)
-         }
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        retService = RetrofitInstance.getRetrofitInstance().create(AlbumService::class.java)
 
-        responseLiveData.observe(this,Observer{
-         val albumList = it.body()?.listIterator()
-         if(albumList!=null){
-             while (albumList.hasNext()){
-                 val albumsItem = albumList.next()
-                 val result = "Albums Title : ${albumsItem.title} \n" +
-                                "Album Id : ${albumsItem.id} \n" +
-                                "UserId : ${albumsItem.userId}\n\n"
-                 binding.txtText.append(result)
-             }
-         }
+        getRequestFromQueryParameter()
+        getRequestFromPathParameter()
+
+    }
+
+    private fun getRequestFromQueryParameter(){
+        val responseLiveData: LiveData<Response<AlbumsResponse>> = liveData {
+            val response = retService.getSortedAlbums(3)
+            emit(response)
+        }
+
+        responseLiveData.observe(this, Observer {
+            val albumList = it.body()?.listIterator()
+            if (albumList != null) {
+                while (albumList.hasNext()) {
+                    val albumsItem = albumList.next()
+                    val result = "Albums Title : ${albumsItem.title} \n" +
+                            "Album Id : ${albumsItem.id} \n" +
+                            "UserId : ${albumsItem.userId}\n\n"
+                    binding.txtText.append(result)
+                }
+            }
         })
+    }
 
-        val pathResponse :LiveData<Response<AlbumsResponseItem>> = liveData {
+    private fun getRequestFromPathParameter(){
+        val pathResponse: LiveData<Response<AlbumsResponseItem>> = liveData {
             val response = retService.getAlbum(3)
             emit(response)
         }
 
-        pathResponse.observe(this,Observer{
+        pathResponse.observe(this, Observer {
             val title = it.body()?.title
-            Toast.makeText(applicationContext,title,Toast.LENGTH_LONG).show()
+            Toast.makeText(applicationContext, title, Toast.LENGTH_LONG).show()
         })
     }
 }
